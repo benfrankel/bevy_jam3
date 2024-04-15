@@ -4,6 +4,8 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
+use rand::thread_rng;
+use rand::Rng;
 
 use crate::common::UpdateSet;
 use crate::game::actor::body::DeathAnimation;
@@ -204,13 +206,18 @@ fn apply_hit_effects(
     mut body_query: Query<&mut FlinchAnimation>,
     audio: Res<Audio>,
 ) {
+    let mut rng = thread_rng();
+
     for &HitEvent { hitbox, hurtbox } in hit_events.read() {
         let Ok(mut hit) = hitbox_query.get_mut(hitbox) else {
             continue;
         };
 
         if let Some(sound) = &hit.success_sound {
-            audio.play(sound.clone()).with_volume(0.4);
+            audio
+                .play(sound.clone())
+                .with_volume(0.4)
+                .with_playback_rate(rng.gen_range(1.0..2.0));
         }
         hit.success = true;
 
@@ -246,10 +253,15 @@ fn clean_up_hitboxes(
     hitbox_query: Query<(Entity, &HitEffects)>,
     audio: Res<Audio>,
 ) {
+    let mut rng = thread_rng();
+
     for (entity, effects) in &hitbox_query {
         if !effects.success {
             if let Some(sound) = &effects.failure_sound {
-                audio.play(sound.clone()).with_volume(0.4);
+                audio
+                    .play(sound.clone())
+                    .with_volume(0.4)
+                    .with_playback_rate(rng.gen_range(1.0..2.0));
             }
         }
 

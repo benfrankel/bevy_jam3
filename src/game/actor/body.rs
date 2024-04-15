@@ -4,6 +4,8 @@ use std::f32::consts::TAU;
 use bevy::math::vec2;
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
+use rand::thread_rng;
+use rand::Rng;
 
 use crate::common::PostTransformSet;
 use crate::common::UpdateSet;
@@ -153,6 +155,7 @@ fn play_step_sound(
     };
     let player_pos = player.translation().xy();
 
+    let mut rng = thread_rng();
     for (anim, transform) in &animation_query {
         if !anim.start_frame {
             continue;
@@ -165,7 +168,8 @@ fn play_step_sound(
 
         audio
             .play(sound.clone())
-            .with_volume(max_volume / (0.2 * dist_to_player).max(1.0));
+            .with_volume(max_volume / (0.2 * dist_to_player).max(1.0))
+            .with_playback_rate(rng.gen_range(0.8..1.6));
     }
 }
 

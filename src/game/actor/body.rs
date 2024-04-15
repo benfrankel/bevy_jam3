@@ -105,6 +105,7 @@ impl BodyTemplate {
 pub struct WalkAnimation {
     pub air_time: f32,
     pub height: f32,
+    pub wobble: f32,
     pub t: f32,
     pub start_frame: bool,
     pub sound: Option<Handle<AudioSource>>,
@@ -114,7 +115,8 @@ impl Default for WalkAnimation {
     fn default() -> Self {
         Self {
             air_time: 0.18,
-            height: 3.0,
+            height: 4.0,
+            wobble: 0.05,
             t: 1.0,
             start_frame: false,
             sound: None,
@@ -140,6 +142,7 @@ fn trigger_walk_animation(
             continue;
         }
 
+        anim.wobble = -anim.wobble;
         anim.start_frame = true;
         anim.t = anim.t.fract();
     }
@@ -183,8 +186,10 @@ fn update_walk_animation(mut animation_query: Query<&mut WalkAnimation>, time: R
 
 fn apply_walk_animation(mut animation_query: Query<(&WalkAnimation, &mut Transform)>) {
     for (anim, mut transform) in &mut animation_query {
-        // PI is used here because we only want half a rotation.
-        transform.translation.y += anim.height * (anim.t.min(1.0) * PI).sin();
+        // PI is used here because we only want a half cycle.
+        let t = (anim.t.min(1.0) * PI).sin();
+        transform.translation.y += anim.height * t;
+        transform.rotation *= Quat::from_rotation_z(anim.wobble * t);
     }
 }
 
@@ -201,7 +206,7 @@ impl Default for AttackAnimation {
     fn default() -> Self {
         Self {
             duration: 0.2,
-            distance: 10.0,
+            distance: 16.0,
             direction: Vec2::ZERO,
             x_sign: 0.0,
             t: 1.0,
@@ -253,9 +258,9 @@ pub struct FlinchAnimation {
 impl Default for FlinchAnimation {
     fn default() -> Self {
         Self {
-            duration: 0.15,
-            distance: 6.0,
-            rotation: TAU / 16.0,
+            duration: 0.3,
+            distance: 8.0,
+            rotation: TAU / 10.0,
             direction: Vec2::ZERO,
             t: 1.0,
         }

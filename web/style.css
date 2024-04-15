@@ -7,6 +7,8 @@
 html,
 body,
 canvas {
+    /* TODO: `!important` is a workaround for the issue discussed in https://github.com/bevyengine/bevy/pull/11057,
+     *       but it messes with the loading spinner. Remove them once they're no longer needed. */
     width: 100% !important;
     height: 100% !important;
 }

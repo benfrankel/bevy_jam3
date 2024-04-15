@@ -2,6 +2,7 @@ pub mod facing;
 pub mod follow;
 pub mod lifetime;
 pub mod offset;
+pub mod transition;
 
 use bevy::prelude::*;
 
@@ -14,6 +15,7 @@ impl Plugin for AnimationPlugin {
             follow::FollowPlugin,
             lifetime::LifetimePlugin,
             offset::OffsetPlugin,
+            transition::TransitionPlugin,
         ));
     }
 }

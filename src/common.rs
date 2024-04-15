@@ -50,15 +50,18 @@ impl Plugin for CommonPlugin {
         app.configure_sets(
             PostUpdate,
             (
-                (UiSystem::Layout, PhysicsSet::Writeback),
-                PostTransformSet::Save,
-                PostTransformSet::Blend,
-                PostTransformSet::ApplyFacing,
-                TransformSystem::TransformPropagate,
-                PostTransformSet::Finish,
-                // GlobalTransform may be slightly out of sync with Transform at this point...
-            )
-                .chain(),
+                (
+                    (UiSystem::Layout, PhysicsSet::Writeback),
+                    PostTransformSet::Save,
+                    PostTransformSet::Blend,
+                    PostTransformSet::ApplyFacing,
+                    TransformSystem::TransformPropagate,
+                    PostTransformSet::Finish,
+                    // GlobalTransform may be slightly out of sync with Transform at this point...
+                )
+                    .chain(),
+                (PostColorSet::Save, PostColorSet::Blend).chain(),
+            ),
         );
 
         // TODO: Workaround for https://github.com/bevyengine/bevy/issues/10157
@@ -133,4 +136,13 @@ pub enum PostTransformSet {
     ApplyFacing,
     /// Apply finishing touches to GlobalTransform, like rounding to the nearest pixel
     Finish,
+}
+
+/// (PostUpdate) Color post-processing system ordering
+#[derive(SystemSet, Clone, Eq, PartialEq, Hash, Debug)]
+pub enum PostColorSet {
+    /// Save the base color as a backup
+    Save,
+    /// Blend via color multiplication (multiply RGBA)
+    Blend,
 }

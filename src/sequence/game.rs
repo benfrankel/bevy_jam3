@@ -20,7 +20,8 @@ use crate::game::cutscene::CutsceneTemplate;
 use crate::game::level::victory::Victory;
 use crate::game::level::LevelAssets;
 use crate::game::level::LevelTemplate;
-use crate::sequence::SequenceState;
+use crate::sequence::fade_in;
+use crate::sequence::fade_out;
 use crate::sequence::SequenceState::*;
 use crate::util::ui::UiRoot;
 
@@ -35,9 +36,17 @@ impl Plugin for GameStatePlugin {
 
         app.add_systems(OnEnter(Game), enter_game)
             .add_systems(OnExit(Game), exit_game)
-            .add_systems(OnEnter(RestartGame), |mut state: ResMut<NextState<_>>| {
-                state.set(Game);
-            });
+            .add_systems(
+                OnEnter(RestartGame),
+                |mut state: ResMut<NextState<_>>,
+                 audio: Res<Audio>,
+                 game_assets: Res<GameAssets>| {
+                    state.set(Game);
+
+                    // Play restart sound
+                    audio.play(game_assets.sfx_restart.clone());
+                },
+            );
 
         app.init_resource::<ActionState<GameAction>>()
             .insert_resource(
@@ -87,6 +96,8 @@ fn enter_game(
     ui_root: Res<UiRoot>,
     mut seen_cutscene: Local<bool>,
 ) {
+    fade_in(&mut commands);
+
     // Spawn level
     let level = LevelTemplate.spawn(&mut commands, &level_assets);
     commands.entity(level).set_parent(game_root.game);
@@ -146,13 +157,6 @@ pub enum GameAction {
     Restart,
 }
 
-fn restart(
-    mut state: ResMut<NextState<SequenceState>>,
-    game_assets: Res<GameAssets>,
-    audio: Res<Audio>,
-) {
-    state.set(RestartGame);
-
-    // Play restart sound
-    audio.play(game_assets.sfx_restart.clone());
+fn restart(mut commands: Commands) {
+    fade_out(&mut commands, RestartGame);
 }
